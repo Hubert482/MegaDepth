@@ -5,20 +5,22 @@ from torch.autograd import Variable
 from .base_model import BaseModel
 import sys
 import pytorch_DIW_scratch
+#import MegaDepth.pytorch_DIW_scratch as pytorch_DIW_scratch
 
 class HGModel(BaseModel):
     def name(self):
         return 'HGModel'
 
-    def __init__(self, opt):
+    def __init__(self, opt,pretrained=None):
         BaseModel.initialize(self, opt)
-
-        print("===========================================LOADING Hourglass NETWORK====================================================")
         model = pytorch_DIW_scratch.pytorch_DIW_scratch
-        model= torch.nn.parallel.DataParallel(model, device_ids = [0,1])
-        model_parameters = self.load_network(model, 'G', 'best_vanila')
+        #print("===========================================LOADING Hourglass NETWORK===================================================="
+        model = torch.nn.parallel.DataParallel(model, device_ids = [0])
+        model_parameters = self.load_network(model, 'G', 'best_generalization')
         model.load_state_dict(model_parameters)
+        #model.half()
         self.netG = model.cuda()
+
 
 
     def batch_classify(self, z_A_arr, z_B_arr, ground_truth ):
@@ -145,4 +147,3 @@ class HGModel(BaseModel):
 
     def switch_to_eval(self):
         self.netG.eval()
-
